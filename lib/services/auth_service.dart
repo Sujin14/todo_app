@@ -13,6 +13,18 @@ class AuthService {
       );
       return cred.user;
     } catch (e) {
+      throw Exception('Sign-in failed: ${e.toString()}');
+    }
+  }
+
+  Future<User?> register(String email, String password) async {
+    try {
+      final cred = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return cred.user;
+    } catch (e) {
       throw Exception('Registration failed: ${e.toString()}');
     }
   }
