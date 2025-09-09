@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
+import 'view/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
