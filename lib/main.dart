@@ -1,11 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import 'firebase_options.dart';
 import 'services/auth_service.dart';
 import 'theme.dart';
-import 'view/login_screen.dart';
+import 'view/splash_screen.dart';
 import 'viewmodels/task_viewmodel.dart';
 
 void main() async {
@@ -21,13 +20,14 @@ class TodoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<AuthService>(create: (_) => AuthService(),),
-        ChangeNotifierProvider<TaskViewModel>(create: (_) => TaskViewModel())
+        Provider<AuthService>(create: (_) => AuthService()),
+        ChangeNotifierProvider<TaskViewModel>(create: (_) => TaskViewModel()),
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'To-Do List',
         theme: AppTheme.theme,
-        home: const LoginScreen(),
+        home: const SplashScreen(),
       ),
     );
   }

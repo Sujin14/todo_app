@@ -6,7 +6,6 @@ import '../viewmodels/task_viewmodel.dart';
 
 class AddEditTaskScreen extends StatelessWidget {
   final Task? task;
-
   const AddEditTaskScreen({super.key, this.task});
 
   @override
@@ -20,7 +19,6 @@ class AddEditTaskScreen extends StatelessWidget {
 
 class _AddEditForm extends StatefulWidget {
   final Task? task;
-
   const _AddEditForm({this.task});
 
   @override
@@ -28,6 +26,7 @@ class _AddEditForm extends StatefulWidget {
 }
 
 class _AddEditFormState extends State<_AddEditForm> {
+  final _formKey = GlobalKey<FormState>();
   late TextEditingController _titleController;
   late TextEditingController _descController;
   DateTime? _dueDate;
@@ -55,79 +54,90 @@ class _AddEditFormState extends State<_AddEditForm> {
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: _titleController,
-            decoration: const InputDecoration(labelText: 'Title'),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _descController,
-            decoration: const InputDecoration(labelText: 'Description'),
-            maxLines: 3,
-          ),
-          const SizedBox(height: 16),
-          ListTile(
-            title: Text(
-              _dueDate == null ? 'Select Due Date' : DateFormat('MMM dd, yyyy').format(_dueDate!),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextFormField(
+              controller: _titleController,
+              decoration: const InputDecoration(labelText: 'Title', border: OutlineInputBorder()),
+              validator: (v) => (v == null || v.trim().isEmpty) ? 'Title is required' : null,
             ),
-            trailing: const Icon(Icons.calendar_today),
-            onTap: () async {
-              final picked = await showDatePicker(
-                context: context,
-                initialDate: _dueDate ?? DateTime.now(),
-                firstDate: DateTime.now(),
-                lastDate: DateTime(2100),
-              );
-              if (picked != null) {
-                setState(() => _dueDate = picked);
-              }
-            },
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            value: _priority,
-            decoration: const InputDecoration(labelText: 'Priority'),
-            items: ['Low', 'Med', 'High']
-                .map((p) => DropdownMenuItem(value: p, child: Text(p)))
-                .toList(),
-            onChanged: (val) => setState(() => _priority = val ?? 'Med'),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () async {
-              if (_titleController.text.trim().isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Title is required')),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _descController,
+              decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                _dueDate == null ? 'Select Due Date' : DateFormat('MMM dd, yyyy').format(_dueDate!),
+              ),
+              trailing: const Icon(Icons.calendar_today),
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: _dueDate ?? DateTime.now(),
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime(2100),
                 );
-                return;
-              }
-              final newTask = (widget.task ?? const Task(title: '')).copyWith(
-                title: _titleController.text.trim(),
-                description: _descController.text.trim(),
-                dueDate: _dueDate,
-                priority: _priority,
-              );
-              try {
-                if (widget.task == null) {
-                  await vm.addTask(newTask);
-                } else {
-                  await vm.updateTask(newTask);
-                }
-                if (context.mounted) Navigator.pop(context);
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: $e')),
-                  );
-                }
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
+                if (picked != null) setState(() => _dueDate = picked);
+              },
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: _priority,
+              decoration: const InputDecoration(labelText: 'Priority', border: OutlineInputBorder()),
+              items: const ['Low', 'Med', 'High']
+                  .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                  .toList(),
+              onChanged: (val) => setState(() => _priority = val ?? 'Med'),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () async {
+                  if (!_formKey.currentState!.validate()) return;
+
+                  final newTask = (widget.task ?? const Task(title: ''))
+                      .copyWith(
+                        title: _titleController.text.trim(),
+                        description: _descController.text.trim(),
+                        dueDate: _dueDate,
+                        priority: _priority,
+                        status: widget.task?.status ?? 'todo',
+                      );
+
+                  try {
+                    if (widget.task == null) {
+                      await vm.addTask(newTask);
+                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Task added')),
+                      );
+                    } else {
+                      await vm.updateTask(newTask);
+                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Task updated')),
+                      );
+                    }
+                    if (context.mounted) Navigator.pop(context);
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: $e')),
+                      );
+                    }
+                  }
+                },
+                child: const Text('Save'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

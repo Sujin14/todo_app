@@ -1,13 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shimmer/shimmer.dart';
 import '../models/task.dart';
 import '../viewmodels/task_viewmodel.dart';
 import '../widgets/task_tile.dart';
 import 'add_edit_task_screen.dart';
+import 'settings_screen.dart';
 
-class TaskListScreen extends StatelessWidget {
+class TaskListScreen extends StatefulWidget {
   const TaskListScreen({super.key});
+
+  @override
+  State<TaskListScreen> createState() => _TaskListScreenState();
+}
+
+class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+  final TextEditingController _searchCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _searchCtrl.addListener(() {
+      context.read<TaskViewModel>().setSearchQuery(_searchCtrl.text);
+      setState(() {}); // for suffix icon change
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _searchCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,75 +42,80 @@ class TaskListScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('To-Do List'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.person_outline),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
+          ),
+        ],
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'To-do'),
+            Tab(text: 'Pending'),
+            Tab(text: 'Completed'),
+          ],
+        ),
+      ),
+      body: Column(
+        children: [
+          // Progress moved to body with proper height
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: SizedBox(
-              width: 40,
-              height: 40,
-              child: CircularProgressIndicator(
-                value: vm.completionProgress,
-                strokeWidth: 4,
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
-                backgroundColor: Colors.grey,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                const Text('Completion'),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: LinearProgressIndicator(
+                    value: vm.completionProgress,
+                    minHeight: 8,
+                    backgroundColor: Colors.black12,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text('${(vm.completionProgress * 100).toStringAsFixed(0)}%'),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: TextField(
+              controller: _searchCtrl,
+              decoration: InputDecoration(
+                hintText: 'Search tasks...',
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchCtrl.text.isEmpty
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          _searchCtrl.clear();
+                          context.read<TaskViewModel>().clearSearch();
+                        },
+                      ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await context.read<TaskViewModel>().refresh();
+              },
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildTaskList(context, vm.todoTasks, vm.isLoading),
+                  _buildTaskList(context, vm.pendingTasks, vm.isLoading),
+                  _buildTaskList(context, vm.completedTasks, vm.isLoading),
+                ],
               ),
             ),
           ),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        onChanged: vm.setSearchQuery,
-                        decoration: const InputDecoration(
-                          hintText: 'Search tasks...',
-                          border: OutlineInputBorder(),
-                          hintStyle: TextStyle(color: Colors.white70),
-                        ),
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    DropdownButton<String>(
-                      value: vm._sortBy,
-                      icon: const Icon(Icons.sort),
-                      items: const [
-                        DropdownMenuItem(value: 'dueDate', child: Text('Due Date')),
-                        DropdownMenuItem(value: 'priority', child: Text('Priority')),
-                      ],
-                      onChanged: (val) => vm.setSortBy(val ?? 'dueDate'),
-                    ),
-                  ],
-                ),
-              ),
-              const TabBar(
-                tabs: [
-                  Tab(text: 'Pending'),
-                  Tab(text: 'Completed'),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-      body: DefaultTabController(
-        length: 2,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isWide = constraints.maxWidth > 600;
-            return TabBarView(
-              children: [
-                _buildTaskList(context, vm.pendingTasks, vm.isLoading, isWide),
-                _buildTaskList(context, vm.completedTasks, vm.isLoading, isWide),
-              ],
-            );
-          },
-        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.push(
@@ -97,39 +127,18 @@ class TaskListScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTaskList(
-      BuildContext context, List<Task> tasks, bool isLoading, bool isWide) {
+  Widget _buildTaskList(BuildContext context, List<Task> tasks, bool isLoading) {
     if (isLoading) {
-      return ListView.builder(
-        itemCount: 5,
-        itemBuilder: (_, __) => Shimmer.fromColors(
-          baseColor: Colors.grey[700]!,
-          highlightColor: Colors.grey[600]!,
-          child: const ListTile(
-            title: SizedBox(height: 20, width: double.infinity),
-            subtitle: SizedBox(height: 10, width: double.infinity),
-          ),
-        ),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
     if (tasks.isEmpty) {
       return const Center(child: Text('No tasks here'));
     }
-    return isWide
-        ? GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 3,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            itemCount: tasks.length,
-            itemBuilder: (_, i) => TaskTile(task: tasks[i]),
-          )
-        : ListView.builder(
-            itemCount: tasks.length,
-            itemBuilder: (_, i) => TaskTile(task: tasks[i]),
-          );
+    return ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(),
+      itemCount: tasks.length,
+      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemBuilder: (_, i) => TaskTile(task: tasks[i]),
+    );
   }
 }

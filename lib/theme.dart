@@ -2,22 +2,30 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   static final ThemeData theme = ThemeData(
-    primaryColor: const Color(0xFF1E6F9F),
-    scaffoldBackgroundColor: const Color(0xFF1A1A1A),
-    colorScheme: ColorScheme.fromSwatch().copyWith(
-      surface: const Color(0xFF1A1A1A),
-      onSurface: const Color(0xFFFFFFFF),
-    ),
-    textTheme: const TextTheme(
-      bodyLarge: TextStyle(color: Color(0xFFFFFFFF)),
-      bodyMedium: TextStyle(color: Color(0xFFFFFFFF)),
-    ),
+    useMaterial3: true,
+    colorSchemeSeed: const Color(0xFF1E6F9F),
+    scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+    textTheme: const TextTheme(),
     appBarTheme: const AppBarTheme(
-      backgroundColor: Color(0xFF1E6F9F),
-      foregroundColor: Color(0xFFFFFFFF),
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black87,
+      elevation: 0.5,
     ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: Color(0xFF1E6F9F),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: const Color(0xFFFFFFFF),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
     ),
+    snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
+    cardTheme: CardThemeData(
+      color: Colors.white,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    ),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(),
   );
 }
