@@ -3,20 +3,23 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/task.dart';
 import '../view/add_edit_task_screen.dart';
+import '../view/task_details_screen.dart';
 import '../viewmodels/task_viewmodel.dart';
 
 class TaskCard extends StatelessWidget {
   final Task task;
   const TaskCard({super.key, required this.task});
 
-  Color _getPriorityColor(String priority) {
+  Color _getPriorityColor(String priority, ColorScheme scheme) {
     switch (priority) {
       case 'High':
-        return Colors.red.shade600;
+        return scheme.error;
+      case 'Med':
+        return scheme.tertiary;
       case 'Low':
-        return Colors.green.shade600;
+        return scheme.secondary;
       default:
-        return Colors.orange.shade700;
+        return scheme.primary;
     }
   }
 
@@ -31,6 +34,8 @@ class TaskCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<TaskViewModel>(context, listen: false);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -41,7 +46,7 @@ class TaskCard extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: Colors.white,
+            color: scheme.surface,
           ),
           child: Row(
             children: [
@@ -49,29 +54,35 @@ class TaskCard extends StatelessWidget {
                 width: 6,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: _getPriorityColor(task.priority),
+                  color: _getPriorityColor(task.priority, scheme),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(task.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        if (task.description.isNotEmpty) Expanded(child: Text(task.description, maxLines: 1, overflow: TextOverflow.ellipsis)),
-                        const SizedBox(width: 8),
-                        Chip(label: Text(task.category)),
-                      ],
-                    ),
-                    if (task.dueDate != null) const SizedBox(height: 8),
-                    if (task.dueDate != null)
-                      Text('Due: ${DateFormat('MMM dd, yyyy').format(task.dueDate!)}',
-                          style: TextStyle(color: _isPastDue ? Colors.red : Colors.black54)),
-                  ],
+                child: GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => TaskDetailsScreen(task: task)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(task.title, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: scheme.onSurface)),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          if (task.description.isNotEmpty) Expanded(child: Text(task.description, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: scheme.onSurface))),
+                          const SizedBox(width: 8),
+                          Chip(label: Text(task.category)),
+                        ],
+                      ),
+                      if (task.dueDate != null) const SizedBox(height: 8),
+                      if (task.dueDate != null)
+                        Text('Due: ${DateFormat('MMM dd, yyyy').format(task.dueDate!)}',
+                            style: TextStyle(color: _isPastDue ? scheme.error : scheme.onSurface.withOpacity(0.6))),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(width: 8),

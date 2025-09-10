@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -47,6 +49,7 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<TaskViewModel>(context, listen: false);
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(widget.task == null ? 'Add Task' : 'Edit Task')),
       body: SingleChildScrollView(
@@ -69,7 +72,7 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(_dueDate == null ? 'Select Due Date' : DateFormat('MMM dd, yyyy').format(_dueDate!)),
-              trailing: const Icon(Icons.calendar_today),
+              trailing: Icon(Icons.calendar_today, color: theme.colorScheme.primary),
               onTap: () async {
                 final picked = await showDatePicker(
                   context: context,
@@ -101,10 +104,9 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
                 onPressed: () async {
                   if (!_formKey.currentState!.validate()) return;
 
-                  // If editing and task is past due and not completed -> block save
                   if (widget.task != null && _isPastDue && (widget.task!.status != 'completed')) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Cannot edit — task is past due')),
+                      SnackBar(content: Text('Cannot edit — task is past due', style: TextStyle(color: theme.colorScheme.onSurface))),
                     );
                     return;
                   }
@@ -121,14 +123,14 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
                   try {
                     if (widget.task == null) {
                       await vm.addTask(newTask);
-                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Task added')));
+                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Task added', style: TextStyle(color: theme.colorScheme.onSurface))));
                     } else {
                       await vm.updateTask(newTask);
-                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Task updated')));
+                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Task updated', style: TextStyle(color: theme.colorScheme.onSurface))));
                     }
                     if (mounted) Navigator.pop(context);
                   } catch (e) {
-                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e', style: TextStyle(color: theme.colorScheme.onSurface))));
                   }
                 },
                 child: const Text('Save'),

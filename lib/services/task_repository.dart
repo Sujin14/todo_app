@@ -46,7 +46,7 @@ class TaskRepository {
     try {
       await _tasks.doc(id).update({
         'status': status,
-        'isCompleted': status == 'completed', // legacy sync
+        'isCompleted': status == 'completed',
       });
     } catch (e) {
       throw Exception('Failed to update status: $e');

@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/task.dart';
 import '../viewmodels/task_viewmodel.dart';
-import '../widgets/task_card.dart';
-import '../widgets/shimmer_task_card.dart';
+import '../widgets/completion_progress.dart';
 import '../widgets/search_filter_bar.dart';
+import '../widgets/shimmer_task_card.dart';
+import '../widgets/task_card.dart';
 import 'add_edit_task_screen.dart';
 import 'settings_screen.dart';
 
@@ -15,8 +16,10 @@ class TaskListScreen extends StatefulWidget {
   State<TaskListScreen> createState() => _TaskListScreenState();
 }
 
-class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProviderStateMixin {
+class _TaskListScreenState extends State<TaskListScreen>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+
   @override
   void initState() {
     super.initState();
@@ -30,15 +33,7 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
   }
 
   Widget _buildList(List<Task> tasks, TaskViewModel vm) {
-    if (vm.isLoading) {
-      return ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: 5,
-        itemBuilder: (_, __) => const ShimmerTaskCard(),
-      );
-    }
-    if (vm.isBusy) {
-      // show shimmer placeholders while busy (ops)
+    if (vm.isLoading || vm.isBusy) {
       return ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
         itemCount: 5,
@@ -65,50 +60,48 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
         actions: [
           IconButton(
             icon: const Icon(Icons.person_outline),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
-          )
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
+          ),
         ],
-        bottom: TabBar(controller: _tabController, tabs: const [
-          Tab(text: 'To-do'),
-          Tab(text: 'Pending'),
-          Tab(text: 'Completed'),
-        ]),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: [
+            Tab(text: 'To-do'),
+            Tab(text: 'Pending'),
+            Tab(text: 'Completed'),
+          ],
+        ),
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                const Text('Completion'),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: LinearProgressIndicator(
-                    value: vm.completionProgress,
-                    minHeight: 8,
-                    backgroundColor: Colors.black12,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text('${(vm.completionProgress * 100).toStringAsFixed(0)}%'),
-              ],
-            ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: CompletionProgress(),
           ),
           const SearchFilterBar(),
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async => await vm.refresh(),
-              child: TabBarView(controller: _tabController, children: [
-                _buildList(vm.todoTasks, vm),
-                _buildList(vm.pendingTasks, vm),
-                _buildList(vm.completedTasks, vm),
-              ]),
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildList(vm.todoTasks, vm),
+                  _buildList(vm.pendingTasks, vm),
+                  _buildList(vm.completedTasks, vm),
+                ],
+              ),
             ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddEditTaskScreen())),
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const AddEditTaskScreen()),
+        ),
         child: const Icon(Icons.add),
       ),
     );

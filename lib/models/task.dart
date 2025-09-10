@@ -7,12 +7,9 @@ class Task {
   final String title;
   final String description;
   final DateTime? dueDate;
-  /// Backward-compat flag; still written for older docs.
   final bool isCompleted;
-  /// New normalized status: 'todo' | 'pending' | 'completed'
   final String status;
   final String priority;
-  /// New categories/tags: e.g., 'Work', 'Personal', 'Study'
   final String category;
 
   const Task({
@@ -49,14 +46,14 @@ class Task {
   }
 
   Map<String, dynamic> toFirestore() => {
-        'title': title,
-        'description': description,
-        'dueDate': dueDate,
-        'isCompleted': status == 'completed',
-        'status': status,
-        'priority': priority,
-        'category': category,
-      };
+    'title': title,
+    'description': description,
+    'dueDate': dueDate,
+    'isCompleted': status == 'completed',
+    'status': status,
+    'priority': priority,
+    'category': category,
+  };
 
   Task copyWith({
     String? id,

@@ -11,10 +11,18 @@ class SettingsScreen extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Log out?'),
-        content: const Text('You will need to log in again to access your tasks.'),
+        content: const Text(
+          'Are yuou sure you hasve to logout? You will need to log in again to access your tasks.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Log out')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Log out'),
+          ),
         ],
       ),
     );
@@ -36,13 +44,19 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
-          const ListTile(
-            leading: Icon(Icons.info_outline),
-            title: Text('Version'),
-            subtitle: Text('1.0.0'),
+          ListTile(
+            leading: Icon(
+              Icons.info_outline,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: const Text('Version'),
+            subtitle: const Text('1.0.0'),
           ),
           ListTile(
-            leading: const Icon(Icons.logout),
+            leading: Icon(
+              Icons.logout,
+              color: Theme.of(context).colorScheme.primary,
+            ),
             title: const Text('Log out'),
             onTap: () => _logout(context),
           ),

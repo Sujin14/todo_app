@@ -1,3 +1,4 @@
+// file: lib/views/splash_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
@@ -18,15 +19,15 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthService>(context);
+    final theme = Theme.of(context);
 
     return StreamBuilder(
       stream: auth.user,
       builder: (context, snapshot) {
-        if (!_navigated) {
-          Future.delayed(const Duration(milliseconds: 1200), () {
-            if (!mounted || _navigated) return;
-            _navigated = true;
-            final user = snapshot.data;
+        if (snapshot.connectionState == ConnectionState.active && !_navigated) {
+          _navigated = true;
+          final user = snapshot.data;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
             if (user != null) {
               Provider.of<TaskViewModel>(context, listen: false).init(user.uid);
               Navigator.pushReplacement(
@@ -42,8 +43,8 @@ class _SplashScreenState extends State<SplashScreen> {
           });
         }
 
-        return const Scaffold(
-          backgroundColor: Color(0xFF1E6F9F),
+        return Scaffold(
+          backgroundColor: theme.colorScheme.primary,
           body: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -53,11 +54,11 @@ class _SplashScreenState extends State<SplashScreen> {
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: theme.colorScheme.onPrimary,
                   ),
                 ),
-                SizedBox(height: 16),
-                CircularProgressIndicator(color: Colors.white),
+                const SizedBox(height: 16),
+                CircularProgressIndicator(color: theme.colorScheme.onPrimary),
               ],
             ),
           ),
