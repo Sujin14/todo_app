@@ -12,6 +12,8 @@ class Task {
   /// New normalized status: 'todo' | 'pending' | 'completed'
   final String status;
   final String priority;
+  /// New categories/tags: e.g., 'Work', 'Personal', 'Study'
+  final String category;
 
   const Task({
     this.id = '',
@@ -21,11 +23,11 @@ class Task {
     this.isCompleted = false,
     this.status = 'todo',
     this.priority = 'Med',
+    this.category = 'General',
   });
 
   factory Task.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
-    // Prefer 'status'; fallback to old 'isCompleted'
     final rawStatus = (data['status'] as String?)?.toLowerCase();
     final bool legacyCompleted = data['isCompleted'] as bool? ?? false;
     final status = switch (rawStatus) {
@@ -42,6 +44,7 @@ class Task {
       isCompleted: data['isCompleted'] as bool? ?? (status == 'completed'),
       status: status,
       priority: data['priority'] as String? ?? 'Med',
+      category: data['category'] as String? ?? 'General',
     );
   }
 
@@ -49,10 +52,10 @@ class Task {
         'title': title,
         'description': description,
         'dueDate': dueDate,
-        // Keep legacy field updated; write the normalized status too.
         'isCompleted': status == 'completed',
         'status': status,
         'priority': priority,
+        'category': category,
       };
 
   Task copyWith({
@@ -63,6 +66,7 @@ class Task {
     bool? isCompleted,
     String? status,
     String? priority,
+    String? category,
   }) {
     final nextStatus = status ?? this.status;
     return Task(
@@ -73,6 +77,7 @@ class Task {
       isCompleted: isCompleted ?? (nextStatus == 'completed'),
       status: nextStatus,
       priority: priority ?? this.priority,
+      category: category ?? this.category,
     );
   }
 }

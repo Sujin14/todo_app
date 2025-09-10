@@ -4,139 +4,137 @@ import 'package:provider/provider.dart';
 import '../models/task.dart';
 import '../viewmodels/task_viewmodel.dart';
 
-class AddEditTaskScreen extends StatelessWidget {
+class AddEditTaskScreen extends StatefulWidget {
   final Task? task;
   const AddEditTaskScreen({super.key, this.task});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(task == null ? 'Add Task' : 'Edit Task')),
-      body: _AddEditForm(task: task),
-    );
-  }
+  State<AddEditTaskScreen> createState() => _AddEditTaskScreenState();
 }
 
-class _AddEditForm extends StatefulWidget {
-  final Task? task;
-  const _AddEditForm({this.task});
-
-  @override
-  State<_AddEditForm> createState() => _AddEditFormState();
-}
-
-class _AddEditFormState extends State<_AddEditForm> {
+class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _titleController;
-  late TextEditingController _descController;
+  late final TextEditingController _titleCtrl;
+  late final TextEditingController _descCtrl;
   DateTime? _dueDate;
   String _priority = 'Med';
+  String _category = 'General';
 
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.task?.title ?? '');
-    _descController = TextEditingController(text: widget.task?.description ?? '');
+    _titleCtrl = TextEditingController(text: widget.task?.title ?? '');
+    _descCtrl = TextEditingController(text: widget.task?.description ?? '');
     _dueDate = widget.task?.dueDate;
     _priority = widget.task?.priority ?? 'Med';
+    _category = widget.task?.category ?? 'General';
   }
 
   @override
   void dispose() {
-    _titleController.dispose();
-    _descController.dispose();
+    _titleCtrl.dispose();
+    _descCtrl.dispose();
     super.dispose();
+  }
+
+  bool get _isPastDue {
+    final d = widget.task?.dueDate;
+    if (d == null) return false;
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day).isAfter(DateTime(d.year, d.month, d.day));
   }
 
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<TaskViewModel>(context, listen: false);
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.task == null ? 'Add Task' : 'Edit Task')),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             TextFormField(
-              controller: _titleController,
+              controller: _titleCtrl,
               decoration: const InputDecoration(labelText: 'Title', border: OutlineInputBorder()),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Title is required' : null,
+              validator: (v) => (v == null || v.trim().isEmpty) ? 'Title required' : null,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             TextFormField(
-              controller: _descController,
+              controller: _descCtrl,
               decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
               maxLines: 3,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(
-                _dueDate == null ? 'Select Due Date' : DateFormat('MMM dd, yyyy').format(_dueDate!),
-              ),
+              title: Text(_dueDate == null ? 'Select Due Date' : DateFormat('MMM dd, yyyy').format(_dueDate!)),
               trailing: const Icon(Icons.calendar_today),
               onTap: () async {
                 final picked = await showDatePicker(
                   context: context,
                   initialDate: _dueDate ?? DateTime.now(),
-                  firstDate: DateTime.now(),
+                  firstDate: DateTime(2000),
                   lastDate: DateTime(2100),
                 );
                 if (picked != null) setState(() => _dueDate = picked);
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               value: _priority,
               decoration: const InputDecoration(labelText: 'Priority', border: OutlineInputBorder()),
-              items: const ['Low', 'Med', 'High']
-                  .map((p) => DropdownMenuItem(value: p, child: Text(p)))
-                  .toList(),
-              onChanged: (val) => setState(() => _priority = val ?? 'Med'),
+              items: const ['Low', 'Med', 'High'].map((p) => DropdownMenuItem(value: p, child: Text(p))).toList(),
+              onChanged: (v) => setState(() => _priority = v ?? 'Med'),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: _category,
+              decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
+              items: const ['General', 'Work', 'Personal', 'Study'].map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+              onChanged: (v) => setState(() => _category = v ?? 'General'),
+            ),
+            const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
                 onPressed: () async {
                   if (!_formKey.currentState!.validate()) return;
 
+                  // If editing and task is past due and not completed -> block save
+                  if (widget.task != null && _isPastDue && (widget.task!.status != 'completed')) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Cannot edit — task is past due')),
+                    );
+                    return;
+                  }
+
                   final newTask = (widget.task ?? const Task(title: ''))
                       .copyWith(
-                        title: _titleController.text.trim(),
-                        description: _descController.text.trim(),
+                        title: _titleCtrl.text.trim(),
+                        description: _descCtrl.text.trim(),
                         dueDate: _dueDate,
                         priority: _priority,
-                        status: widget.task?.status ?? 'todo',
+                        category: _category,
                       );
 
                   try {
                     if (widget.task == null) {
                       await vm.addTask(newTask);
-                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Task added')),
-                      );
+                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Task added')));
                     } else {
                       await vm.updateTask(newTask);
-                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Task updated')),
-                      );
+                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Task updated')));
                     }
-                    if (context.mounted) Navigator.pop(context);
+                    if (mounted) Navigator.pop(context);
                   } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error: $e')),
-                      );
-                    }
+                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
                   }
                 },
                 child: const Text('Save'),
               ),
             ),
-          ],
+          ]),
         ),
       ),
     );

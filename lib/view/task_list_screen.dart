@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/task.dart';
 import '../viewmodels/task_viewmodel.dart';
-import '../widgets/task_tile.dart';
+import '../widgets/task_card.dart';
+import '../widgets/shimmer_task_card.dart';
+import '../widgets/search_filter_bar.dart';
 import 'add_edit_task_screen.dart';
 import 'settings_screen.dart';
 
@@ -15,23 +17,42 @@ class TaskListScreen extends StatefulWidget {
 
 class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
-  final TextEditingController _searchCtrl = TextEditingController();
-
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _searchCtrl.addListener(() {
-      context.read<TaskViewModel>().setSearchQuery(_searchCtrl.text);
-      setState(() {}); // for suffix icon change
-    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    _searchCtrl.dispose();
     super.dispose();
+  }
+
+  Widget _buildList(List<Task> tasks, TaskViewModel vm) {
+    if (vm.isLoading) {
+      return ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: 5,
+        itemBuilder: (_, __) => const ShimmerTaskCard(),
+      );
+    }
+    if (vm.isBusy) {
+      // show shimmer placeholders while busy (ops)
+      return ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: 5,
+        itemBuilder: (_, __) => const ShimmerTaskCard(),
+      );
+    }
+    if (tasks.isEmpty) {
+      return const Center(child: Text('No tasks here'));
+    }
+    return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
+      itemCount: tasks.length,
+      itemBuilder: (_, i) => TaskCard(task: tasks[i]),
+    );
   }
 
   @override
@@ -44,24 +65,17 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
         actions: [
           IconButton(
             icon: const Icon(Icons.person_outline),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const SettingsScreen()),
-            ),
-          ),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
+          )
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'To-do'),
-            Tab(text: 'Pending'),
-            Tab(text: 'Completed'),
-          ],
-        ),
+        bottom: TabBar(controller: _tabController, tabs: const [
+          Tab(text: 'To-do'),
+          Tab(text: 'Pending'),
+          Tab(text: 'Completed'),
+        ]),
       ),
       body: Column(
         children: [
-          // Progress moved to body with proper height
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
@@ -80,65 +94,23 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: TextField(
-              controller: _searchCtrl,
-              decoration: InputDecoration(
-                hintText: 'Search tasks...',
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchCtrl.text.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () {
-                          _searchCtrl.clear();
-                          context.read<TaskViewModel>().clearSearch();
-                        },
-                      ),
-              ),
-            ),
-          ),
+          const SearchFilterBar(),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: () async {
-                await context.read<TaskViewModel>().refresh();
-              },
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildTaskList(context, vm.todoTasks, vm.isLoading),
-                  _buildTaskList(context, vm.pendingTasks, vm.isLoading),
-                  _buildTaskList(context, vm.completedTasks, vm.isLoading),
-                ],
-              ),
+              onRefresh: () async => await vm.refresh(),
+              child: TabBarView(controller: _tabController, children: [
+                _buildList(vm.todoTasks, vm),
+                _buildList(vm.pendingTasks, vm),
+                _buildList(vm.completedTasks, vm),
+              ]),
             ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AddEditTaskScreen()),
-        ),
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddEditTaskScreen())),
         child: const Icon(Icons.add),
       ),
-    );
-  }
-
-  Widget _buildTaskList(BuildContext context, List<Task> tasks, bool isLoading) {
-    if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (tasks.isEmpty) {
-      return const Center(child: Text('No tasks here'));
-    }
-    return ListView.separated(
-      physics: const AlwaysScrollableScrollPhysics(),
-      itemCount: tasks.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
-      itemBuilder: (_, i) => TaskTile(task: tasks[i]),
     );
   }
 }
