@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 
 @immutable
 class Task {
@@ -8,7 +8,9 @@ class Task {
   final String description;
   final DateTime? dueDate;
   final bool isCompleted;
+  final String status;
   final String priority;
+  final String category;
 
   const Task({
     this.id = '',
@@ -16,18 +18,30 @@ class Task {
     this.description = '',
     this.dueDate,
     this.isCompleted = false,
+    this.status = 'todo',
     this.priority = 'Med',
+    this.category = 'General',
   });
 
   factory Task.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
+    final rawStatus = (data['status'] as String?)?.toLowerCase();
+    final bool legacyCompleted = data['isCompleted'] as bool? ?? false;
+    final status = switch (rawStatus) {
+      'pending' => 'pending',
+      'completed' => 'completed',
+      'todo' => 'todo',
+      _ => legacyCompleted ? 'completed' : 'todo',
+    };
     return Task(
       id: doc.id,
       title: data['title'] as String? ?? '',
       description: data['description'] as String? ?? '',
       dueDate: (data['dueDate'] as Timestamp?)?.toDate(),
-      isCompleted: data['isCompleted'] as bool? ?? false,
+      isCompleted: data['isCompleted'] as bool? ?? (status == 'completed'),
+      status: status,
       priority: data['priority'] as String? ?? 'Med',
+      category: data['category'] as String? ?? 'General',
     );
   }
 
@@ -35,8 +49,10 @@ class Task {
     'title': title,
     'description': description,
     'dueDate': dueDate,
-    'isCompleted': isCompleted,
+    'isCompleted': status == 'completed',
+    'status': status,
     'priority': priority,
+    'category': category,
   };
 
   Task copyWith({
@@ -45,15 +61,20 @@ class Task {
     String? description,
     DateTime? dueDate,
     bool? isCompleted,
+    String? status,
     String? priority,
+    String? category,
   }) {
+    final nextStatus = status ?? this.status;
     return Task(
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
       dueDate: dueDate ?? this.dueDate,
-      isCompleted: isCompleted ?? this.isCompleted,
+      isCompleted: isCompleted ?? (nextStatus == 'completed'),
+      status: nextStatus,
       priority: priority ?? this.priority,
+      category: category ?? this.category,
     );
   }
 }

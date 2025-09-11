@@ -1,77 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../services/auth_service.dart';
+import '../widgets/login_form.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _isRegister = false;
-
-  @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<AuthService>(context);
-
+    final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Login/Register')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-              keyboardType: TextInputType.emailAddress,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [theme.colorScheme.surface, theme.colorScheme.primary],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        width: double.infinity,
+        height: double.infinity,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Card(
+              elevation: 16,
+              shadowColor: theme.shadowColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: const Padding(
+                padding: EdgeInsets.all(24.0),
+                child: LoginForm(),
+              ),
             ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  final user = _isRegister
-                      ? await auth.register(_emailController.text, _passwordController.text)
-                      : await auth.signIn(_emailController.text, _passwordController.text);
-                  if (user != null && context.mounted) {
-                    Provider.of<TaskViewModel>(context, listen: false).init(user.uid);
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => const TaskListScreen()),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
-                  }
-                }
-              },
-              child: Text(_isRegister ? 'Register' : 'Login'),
-            ),
-            TextButton(
-              onPressed: () => setState(() => _isRegister = !_isRegister),
-              child: Text(_isRegister ? 'Switch to Login' : 'Switch to Register'),
-            ),
-          ],
+          ),
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
   }
 }
