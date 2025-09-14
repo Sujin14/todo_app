@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
+// This class represents a Task model with immutable properties.
+// It includes factory constructor for Firestore deserialization and methods for serialization and copying.
 @immutable
 class Task {
   final String id;
@@ -12,6 +14,7 @@ class Task {
   final String priority;
   final String category;
 
+  // Constructor with default values for optional fields.
   const Task({
     this.id = '',
     required this.title,
@@ -23,6 +26,8 @@ class Task {
     this.category = 'General',
   });
 
+  // Factory constructor to create Task from Firestore document.
+  // Handles legacy 'isCompleted' field and maps status accordingly.
   factory Task.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
     final rawStatus = (data['status'] as String?)?.toLowerCase();
@@ -45,16 +50,18 @@ class Task {
     );
   }
 
+  // Converts Task to Firestore-compatible map.
   Map<String, dynamic> toFirestore() => {
-    'title': title,
-    'description': description,
-    'dueDate': dueDate,
-    'isCompleted': status == 'completed',
-    'status': status,
-    'priority': priority,
-    'category': category,
-  };
+        'title': title,
+        'description': description,
+        'dueDate': dueDate,
+        'isCompleted': status == 'completed',
+        'status': status,
+        'priority': priority,
+        'category': category,
+      };
 
+  // Creates a copy of the Task with optional overrides.
   Task copyWith({
     String? id,
     String? title,

@@ -19,6 +19,7 @@ dependencies:
   shimmer: ^3.0.0
   intl: ^0.20.2
   flutter_slidable: ^4.0.1
+  lottie: ^3.3.1
   
 
 dev_dependencies:
@@ -34,8 +35,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+   - assets/animations/no_data.json
   #   - images/a_dot_ham.jpeg
 
 

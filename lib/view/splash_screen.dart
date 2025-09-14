@@ -1,11 +1,11 @@
-// file: lib/views/splash_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
+import '../view/login_screen.dart';
+import '../view/task_list_screen.dart';
 import '../viewmodels/task_viewmodel.dart';
-import 'login_screen.dart';
-import 'task_list_screen.dart';
 
+// Splash screen that checks authentication state and navigates accordingly.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 

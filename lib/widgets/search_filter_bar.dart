@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/task_viewmodel.dart';
 
+// Bar for searching and filtering tasks.
 class SearchFilterBar extends StatefulWidget {
   const SearchFilterBar({super.key});
   @override
@@ -26,6 +27,7 @@ class _SearchFilterBarState extends State<SearchFilterBar> {
     super.dispose();
   }
 
+  // Shows bottom sheet for sorting options.
   void _showFilterMenu() {
     showModalBottomSheet(
       context: context,

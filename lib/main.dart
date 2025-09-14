@@ -7,12 +7,14 @@ import 'theme.dart';
 import 'view/splash_screen.dart';
 import 'viewmodels/task_viewmodel.dart';
 
+// Entry point of the app.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const TodoApp());
 }
 
+// Root widget providing providers and theme.
 class TodoApp extends StatelessWidget {
   const TodoApp({super.key});
 

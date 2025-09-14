@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
+// Shimmer effect widget for task card placeholder during loading.
 class ShimmerTaskCard extends StatelessWidget {
   final double height;
   const ShimmerTaskCard({super.key, this.height = 88});
