@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
+import '../utils/validators.dart';
 import '../view/task_list_screen.dart';
 import '../viewmodels/task_viewmodel.dart';
 
+// Form widget for login and registration.
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
 
@@ -29,6 +31,7 @@ class _LoginFormState extends State<LoginForm> {
     super.dispose();
   }
 
+  // Submits login or registration.
   Future<void> _submit(AuthService auth) async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _submitting = true);
@@ -57,6 +60,7 @@ class _LoginFormState extends State<LoginForm> {
     }
   }
 
+  // Handles forgot password functionality.
   Future<void> _forgotPassword(AuthService auth) async {
     final email = _emailController.text.trim();
     if (email.isEmpty || !email.contains('@')) {
@@ -119,11 +123,7 @@ class _LoginFormState extends State<LoginForm> {
                   prefixIcon: Icon(Icons.email_outlined),
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Email is required';
-                  if (!v.contains('@')) return 'Invalid email';
-                  return null;
-                },
+                validator: emailValidator,
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -141,11 +141,7 @@ class _LoginFormState extends State<LoginForm> {
                     onPressed: () => setState(() => _obscurePwd = !_obscurePwd),
                   ),
                 ),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Password is required';
-                  if (v.length < 6) return 'Min 6 characters';
-                  return null;
-                },
+                validator: passwordValidator,
               ),
               if (_isRegister) ...[
                 const SizedBox(height: 12),
@@ -166,14 +162,7 @@ class _LoginFormState extends State<LoginForm> {
                           setState(() => _obscureConfirm = !_obscureConfirm),
                     ),
                   ),
-                  validator: (v) {
-                    if (!_isRegister) return null;
-                    if (v == null || v.isEmpty) return 'Confirm your password';
-                    if (v != _passwordController.text) {
-                      return 'Passwords do not match';
-                    }
-                    return null;
-                  },
+                  validator: (value) => confirmPasswordValidator(value, _passwordController.text),
                 ),
               ],
               const SizedBox(height: 16),

@@ -1,0 +1,115 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../models/task.dart';
+
+// View widget displaying detailed information of a task.
+class TaskDetailsView extends StatelessWidget {
+  final Task task;
+  const TaskDetailsView({super.key, required this.task});
+
+  // Checks if the task is past due.
+  bool get _isPastDue {
+    final d = task.dueDate;
+    if (d == null) return false;
+    final now = DateTime.now();
+    return DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).isAfter(DateTime(d.year, d.month, d.day));
+  }
+
+  // Gets color based on priority.
+  Color _getPriorityColor(String priority, ColorScheme scheme) {
+    switch (priority) {
+      case 'High':
+        return scheme.error;
+      case 'Med':
+        return scheme.tertiary;
+      case 'Low':
+        return scheme.secondary;
+      default:
+        return scheme.primary;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Description',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: scheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                task.description.isEmpty ? 'No description' : task.description,
+                style: TextStyle(color: scheme.onSurface),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Due Date',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: scheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                task.dueDate != null
+                    ? DateFormat('MMM dd, yyyy').format(task.dueDate!)
+                    : 'No due date',
+                style: TextStyle(
+                  color: _isPastDue ? scheme.error : scheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Priority',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: scheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Chip(
+                label: Text(
+                  task.priority,
+                  style: TextStyle(color: scheme.onPrimary),
+                ),
+                backgroundColor: _getPriorityColor(task.priority, scheme),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Category',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: scheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Chip(label: Text(task.category)),
+              const SizedBox(height: 24),
+              Text(
+                'Status',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: scheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Chip(label: Text(task.status)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

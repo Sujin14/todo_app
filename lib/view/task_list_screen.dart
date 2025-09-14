@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import '../models/task.dart';
+import '../view/add_edit_task_screen.dart';
+import '../view/settings_screen.dart';
 import '../viewmodels/task_viewmodel.dart';
 import '../widgets/completion_progress.dart';
 import '../widgets/search_filter_bar.dart';
 import '../widgets/shimmer_task_card.dart';
 import '../widgets/task_card.dart';
-import 'add_edit_task_screen.dart';
-import 'settings_screen.dart';
 
+// Main screen listing tasks in tabs: To-do, Pending, Completed.
 class TaskListScreen extends StatefulWidget {
   const TaskListScreen({super.key});
 
@@ -32,6 +34,7 @@ class _TaskListScreenState extends State<TaskListScreen>
     super.dispose();
   }
 
+  // Builds the list of tasks or shimmer placeholders if loading.
   Widget _buildList(List<Task> tasks, TaskViewModel vm) {
     if (vm.isLoading || vm.isBusy) {
       return ListView.builder(
@@ -41,7 +44,10 @@ class _TaskListScreenState extends State<TaskListScreen>
       );
     }
     if (tasks.isEmpty) {
-      return const Center(child: Text('No tasks here'));
+      return SizedBox(
+        height: 200,
+        child: Lottie.asset('assets/animations/no_data.json'),
+      );
     }
     return ListView.builder(
       physics: const AlwaysScrollableScrollPhysics(),

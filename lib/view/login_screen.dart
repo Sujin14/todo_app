@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/login_form.dart';
 
+// Login screen with gradient background and centered card containing LoginForm.
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 

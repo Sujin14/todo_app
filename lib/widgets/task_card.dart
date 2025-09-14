@@ -6,10 +6,12 @@ import '../view/add_edit_task_screen.dart';
 import '../view/task_details_screen.dart';
 import '../viewmodels/task_viewmodel.dart';
 
+// Card widget representing a single task in the list.
 class TaskCard extends StatelessWidget {
   final Task task;
   const TaskCard({super.key, required this.task});
 
+  // Gets color based on priority.
   Color _getPriorityColor(String priority, ColorScheme scheme) {
     switch (priority) {
       case 'High':
@@ -23,11 +25,11 @@ class TaskCard extends StatelessWidget {
     }
   }
 
+  // Checks if the task is past due.
   bool get _isPastDue {
     final d = task.dueDate;
     if (d == null) return false;
     final now = DateTime.now();
-    // compare date-only (not time)
     return DateTime(now.year, now.month, now.day).isAfter(DateTime(d.year, d.month, d.day));
   }
 
@@ -89,7 +91,6 @@ class TaskCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // status dropdown
                   DropdownButton<String>(
                     value: task.status,
                     underline: const SizedBox.shrink(),
@@ -101,7 +102,6 @@ class TaskCard extends StatelessWidget {
                     onChanged: (val) async {
                       if (val == null || val == task.status) return;
 
-                      // If trying to mark completed but past due -> block
                       if (val == 'completed' && _isPastDue && task.status != 'completed') {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Cannot mark as completed — task past due date')),
@@ -117,11 +117,9 @@ class TaskCard extends StatelessWidget {
                       }
                     },
                   ),
-
                   PopupMenuButton<String>(
                     onSelected: (value) async {
                       if (value == 'edit') {
-                        // if past due and not completed -> block edit
                         if (_isPastDue && task.status != 'completed') {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Cannot edit — task is past due')),

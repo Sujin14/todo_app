@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// Theme configuration for the app.
 class AppTheme {
   static final ThemeData theme = ThemeData(
     useMaterial3: true,

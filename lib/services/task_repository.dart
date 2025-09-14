@@ -1,16 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/task.dart';
 
+// Repository class for managing tasks in Firestore for a specific user.
 class TaskRepository {
   final String userId;
   TaskRepository({required this.userId});
 
+  // Reference to the user's tasks collection.
   CollectionReference<Map<String, dynamic>> get _tasks => FirebaseFirestore
       .instance
       .collection('users')
       .doc(userId)
       .collection('tasks');
 
+  // Stream of tasks ordered by due date.
   Stream<List<Task>> getTasks() {
     return _tasks
         .orderBy('dueDate', descending: false)
@@ -21,11 +24,13 @@ class TaskRepository {
         });
   }
 
+  // Fetches tasks once without streaming.
   Future<List<Task>> fetchTasksOnce() async {
     final snap = await _tasks.orderBy('dueDate', descending: false).get();
     return snap.docs.map(Task.fromFirestore).toList();
   }
 
+  // Adds a new task.
   Future<void> addTask(Task task) async {
     try {
       await _tasks.add(task.toFirestore());
@@ -34,6 +39,7 @@ class TaskRepository {
     }
   }
 
+  // Updates an existing task.
   Future<void> updateTask(Task task) async {
     try {
       await _tasks.doc(task.id).update(task.toFirestore());
@@ -42,6 +48,7 @@ class TaskRepository {
     }
   }
 
+  // Updates task status.
   Future<void> updateStatus(String id, String status) async {
     try {
       await _tasks.doc(id).update({
@@ -53,6 +60,7 @@ class TaskRepository {
     }
   }
 
+  // Deletes a task.
   Future<void> deleteTask(String id) async {
     try {
       await _tasks.doc(id).delete();
@@ -61,6 +69,7 @@ class TaskRepository {
     }
   }
 
+  // Toggles task completion status.
   Future<void> toggleCompletion(String id, bool currentCompleted) async {
     try {
       final next = !currentCompleted;

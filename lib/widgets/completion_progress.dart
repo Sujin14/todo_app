@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/task_viewmodel.dart';
 
+// Widget displaying task completion progress bar.
 class CompletionProgress extends StatelessWidget {
   const CompletionProgress({super.key});
 

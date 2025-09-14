@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/task_viewmodel.dart';
 
+// Bar for searching and filtering tasks.
 class SearchFilterBar extends StatefulWidget {
   const SearchFilterBar({super.key});
   @override
@@ -26,6 +27,7 @@ class _SearchFilterBarState extends State<SearchFilterBar> {
     super.dispose();
   }
 
+  // Shows bottom sheet for sorting options.
   void _showFilterMenu() {
     showModalBottomSheet(
       context: context,
@@ -50,14 +52,6 @@ class _SearchFilterBarState extends State<SearchFilterBar> {
                   Navigator.pop(ctx);
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.label),
-                title: const Text('Sort by Category'),
-                onTap: () {
-                  vm.setSortBy('category');
-                  Navigator.pop(ctx);
-                },
-              ),
             ],
           ),
         );
@@ -75,7 +69,7 @@ class _SearchFilterBarState extends State<SearchFilterBar> {
             child: TextField(
               controller: _ctrl,
               decoration: InputDecoration(
-                hintText: 'Search tasks (title, desc, category)...',
+                hintText: 'Search tasks by name ...',
                 border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _ctrl.text.isEmpty
