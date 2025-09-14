@@ -52,14 +52,6 @@ class _SearchFilterBarState extends State<SearchFilterBar> {
                   Navigator.pop(ctx);
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.label),
-                title: const Text('Sort by Category'),
-                onTap: () {
-                  vm.setSortBy('category');
-                  Navigator.pop(ctx);
-                },
-              ),
             ],
           ),
         );
@@ -77,7 +69,7 @@ class _SearchFilterBarState extends State<SearchFilterBar> {
             child: TextField(
               controller: _ctrl,
               decoration: InputDecoration(
-                hintText: 'Search tasks (title, desc, category)...',
+                hintText: 'Search tasks by name ...',
                 border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _ctrl.text.isEmpty

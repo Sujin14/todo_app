@@ -100,12 +100,10 @@ class TaskViewModel extends ChangeNotifier {
         ),
       );
     } else if (_sortBy == 'priority') {
-      const prioMap = {'Low': 0, 'Med': 1, 'High': 2};
+      const prioMap = {'High': 0, 'Med': 1, 'low': 2};
       _filteredTasks.sort(
         (a, b) => prioMap[a.priority]!.compareTo(prioMap[b.priority]!),
       );
-    } else if (_sortBy == 'category') {
-      _filteredTasks.sort((a, b) => a.category.compareTo(b.category));
     }
   }
 

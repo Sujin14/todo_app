@@ -1,16 +1,54 @@
-# todo_app
+# To-Do App
 
-A new Flutter project.
+A simple and elegant Flutter to-do list app with task categorization, progress tracking, and a smooth UI.  
+Built using **Flutter**, **Provider** for state management, and **Firebase** for authentication & persistence.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## Project Link
 
-A few resources to get you started if this is your first Flutter project:
+[GitHub Repository](https://github.com/Sujin14/todo_app.git)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Features
+
+- Create, edit, delete tasks  
+- Categorize tasks into **To-do**, **Pending**, **Completed**  
+- Search & filter tasks  
+- Visual progress indicator (completion progress)  
+- Display Lottie animation when there are no tasks    
+- Firebase Auth (Email/Password)  
+- Firestore as the backend database  
+
+---
+
+## Tech Stack
+
+| Component        | Technology / Package                               |
+|------------------|----------------------------------------------------|
+| Framework        | Flutter                                            |
+| State Management | Provider                                           |
+| Backend          | Firebase Authentication & Cloud Firestore          |
+| UI Enhancements  | Lottie, Shimmer                                    |
+
+---
+
+## Project Structure
+
+```text
+todo_app/
+├── android/
+├── ios/
+├── assets/
+│   └── animations/         # Lottie animations (e.g. no_data.json)
+├── lib/
+│   ├── models/             # Data models (e.g. Task)
+│   ├── services/           # Communication with Firebase etc.
+│   ├── view/               # Screens (UI pages)
+│   ├── viewmodels/         # Business logic, state
+│   ├── widgets/            # Reusable widgets
+│   ├── utils/              # Helper functions / validators etc.
+│   └── main.dart           # App entry point
+├── pubspec.yaml            # Dependencies, asset declarations
+└── README.md               
